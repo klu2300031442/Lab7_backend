@@ -11,30 +11,35 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 public class SecurityConfig {
+
     private final UserDetailsServiceImpl userDetailsService;
 
     public SecurityConfig(UserDetailsServiceImpl userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
-   @Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf().disable()
-        .authorizeHttpRequests()
-        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // ✅ Preflight
-        .antMatchers("/auth/**", "/api/products/**", "/api/payments/**").permitAll()
-        .anyRequest().authenticated()
-        .and()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                // ✅ CORS preflight
+                .requestMatchers(new AntPathRequestMatcher("/**", "OPTIONS")).permitAll()
+                // ✅ Public endpoints
+                .requestMatchers("/auth/**", "/api/products/**", "/api/payments/**").permitAll()
+                // ✅ Any other endpoint requires authentication
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(session -> 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            );
 
-    return http.build();
-}
-
-
+        return http.build();
+    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
