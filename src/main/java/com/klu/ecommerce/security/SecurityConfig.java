@@ -27,11 +27,15 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // ✅ CORS preflight
+                // ✅ Allow all OPTIONS (CORS preflight)
                 .requestMatchers(new AntPathRequestMatcher("/**", "OPTIONS")).permitAll()
-                // ✅ Public endpoints
-                .requestMatchers("/auth/**", "/api/products/**", "/api/payments/**").permitAll()
-                // ✅ Any other endpoint requires authentication
+
+                // ✅ Public endpoints (each one separately)
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/api/products/**").permitAll()
+                .requestMatchers("/api/payments/**").permitAll()
+
+                // ✅ Everything else requires authentication
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> 
