@@ -30,12 +30,12 @@ public class SecurityConfig {
                 // ✅ Allow all OPTIONS (CORS preflight)
                 .requestMatchers(new AntPathRequestMatcher("/**", "OPTIONS")).permitAll()
 
-                // ✅ Public endpoints (each one separately)
+                // ✅ Each public endpoint must be its own line
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/api/products/**").permitAll()
                 .requestMatchers("/api/payments/**").permitAll()
 
-                // ✅ Everything else requires authentication
+                // ✅ Secure everything else
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> 
